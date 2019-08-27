@@ -48,7 +48,7 @@ class Fetcher:
                     continue        
 
         # new_tweets = app.search(**query)
-        self.process_tweets(new_tweets, collection_name)
+        self.process_tweets(new_tweets, query, collection_name)
         self.lock.release()
         return new_tweets
 
