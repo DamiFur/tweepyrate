@@ -1,6 +1,7 @@
 import time
 import tweepy
 import threading
+import datetime as dt
 
 class Fetcher:
     def __init__(self, apps, minutes, process_tweets, count):
