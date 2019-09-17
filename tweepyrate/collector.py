@@ -56,11 +56,12 @@ class Fetcher:
 
 
 class Collector(threading.Thread):
-    def __init__(self, process_tweets, fetcher, minutes, **kwargs):
+    def __init__(self, process_tweets, collection, fetcher, minutes, **kwargs):
         self.process_tweets = process_tweets
         self.args = kwargs
         self.args["count"] = 1000
         self.minutes = minutes
+        self.collection = collection
         self.args["tweet_mode"] = "extended"
         self.args["include_rts"] = False
         self.args["tweet_mode"] = "extended"
@@ -75,7 +76,7 @@ class Collector(threading.Thread):
 
     def fetch(self):
         query = self.get_query()
-        return self.fetcher.fetch(query, False, query["q"])
+        return self.fetcher.fetch(query, False, self.collection)
 
 
     def wait(self):
@@ -97,14 +98,14 @@ class NewTweetsCollector(Collector):
     Objects of this class are in charge of looking for new tweets for a given
     query
     """
-    def __init__(self, process_tweets, fetcher, minutes, since_id=None, **kwargs):
+    def __init__(self, process_tweets, collection, fetcher, minutes, since_id=None, **kwargs):
         """Constructor
 
         Arguments:
         ---------
 
         """
-        super().__init__(process_tweets, fetcher, minutes, **kwargs)
+        super().__init__(process_tweets, collection, fetcher, minutes, **kwargs)
         self.since_id = since_id
 
     def get_query(self):
@@ -145,14 +146,14 @@ class PastTweetsCollector(Collector):
     Objects of this class are in charge of looking for new tweets for a given
     query
     """
-    def __init__(self, process_tweets, fetcher, minutes, max_id=None, **kwargs):
+    def __init__(self, process_tweets, collection, fetcher, minutes, max_id=None, **kwargs):
         """Constructor
 
         Arguments:
         ---------
 
         """
-        super().__init__(process_tweets, fetcher, minutes, **kwargs)
+        super().__init__(process_tweets, collection, fetcher, minutes, **kwargs)
         self.max_id = max_id
 
     def get_query(self):
@@ -184,14 +185,14 @@ class PastTweetsCollector(Collector):
 
 
 class ByUsersCollector(Collector):
-    def __init__(self, process_tweets, fetcher, minutes, isPositive, users=[], limit_id=None, direction="all", **kwargs):
+    def __init__(self, process_tweets, collection, fetcher, minutes, isPositive, users=[], limit_id=None, direction="all", **kwargs):
         """Constructor
 
         Arguments:
         ---------
 
         """
-        super().__init__(process_tweets, fetcher, minutes, **kwargs)
+        super().__init__(process_tweets, collection, fetcher, minutes, **kwargs)
         self.users = users
         self.limit_id = limit_id
         self.direction = direction
