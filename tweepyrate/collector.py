@@ -210,6 +210,7 @@ class ByUsersCollector(Collector):
 
         query["screen_name"] = self.users[self.current_user]
         self.current_user = (self.current_user + 1) % len(self.users)
+        del query["include_rts"]
         return query
 
     def fetch(self):
@@ -225,7 +226,7 @@ class ByUsersCollector(Collector):
         stance = "-Positive" if self.isPositive else "-Negative"
         new_tweets = []
         try:
-            new_tweets = self.fetcher.fetch(query, True, query["q"] + stance)
+            new_tweets = self.fetcher.fetch(query, True, self.collection + stance)
         except ValueError:
             self.users.remove(self.users[self.current_user])
             print(self.users)
