@@ -52,7 +52,7 @@ class Fetcher:
         app: tweepy App
         """
 
-        print("Querying {}".format(query))
+        #print("Querying {}".format(query))
         self.lock.acquire()
         print("Lock aquired by {}".format(query))
         while True:
