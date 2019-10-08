@@ -3,9 +3,38 @@ import tweepy
 import threading
 import datetime as dt
 
+
+
+class StreamListenerAndStore(tweepy.StreamListener):
+    def __init__(self, store_function, collection, lock):
+        super().__init__()
+        self.store_function = store_function
+        self.collection = collection
+        self.lock = lock
+
+    def on_status(self, status):
+        # self.lock.acquire()
+        self.store_function([status], "streaming", self.collection)
+        print("Stored one tweet with fetcher")
+        # self.lock.release()
+
+    def on_error(self, status_code):
+            if status_code == 420:
+                print("Error 420 en el Listener")
+                #returning False in on_data disconnects the stream
+                return False
+            else:
+                print("Error con status code {}".format(status_code))
+
+    def on_limit(self,status):
+        time.Sleep()
+        print("Llegué al limite. Cierro el Stream")
+        return False
+
 class Fetcher:
-    def __init__(self, apps, minutes, process_tweets, count):
+    def __init__(self, apps, stream_apps, minutes, process_tweets, count):
         self.apps = apps
+        self.stream_apps = stream_apps
         self.minutes = minutes
         self.process_tweets = process_tweets
         self.lock = threading.Lock()
@@ -41,8 +70,8 @@ class Fetcher:
                     raise ValueError("User was invalid")
                 if self.current_app == len(self.apps) - 1:
                     self.current_app = 0
-                    print('exception raised, waiting to continue')
-                    print('(until:', dt.datetime.now()+dt.timedelta(minutes=self.minutes), ')')
+                    print('exception raised: {}'.format(e))
+                    print('(waiting to continue until:', dt.datetime.now()+dt.timedelta(minutes=self.minutes), ')')
                     time.sleep(self.minutes*60)
                 else:
                     self.current_app += 1
@@ -53,17 +82,25 @@ class Fetcher:
         self.lock.release()
         return new_tweets
 
+    def stream(self, queries, collection_name):
+        while True:
+            for app in self.stream_apps:
+                print("Streaming con la app {}".format(app.name))
+                localStreamer = StreamListenerAndStore(self.process_tweets, collection_name, self.lock)
+                stream = tweepy.Stream(auth=app.auth, listener=localStreamer)
+                stream.filter(track=queries)
+
+            print("Streaming durmiendo por {} minutos".format(self.minutes))
+            time.sleep(self.minutes * 60)
+
 
 
 class Collector(threading.Thread):
-    def __init__(self, process_tweets, collection, fetcher, minutes, **kwargs):
-        self.process_tweets = process_tweets
+    def __init__(self, collection, fetcher, minutes, **kwargs):
         self.args = kwargs
         self.args["count"] = 1000
         self.minutes = minutes
         self.collection = collection
-        self.args["tweet_mode"] = "extended"
-        self.args["include_rts"] = False
         self.args["tweet_mode"] = "extended"
         self.fetcher = fetcher
 
@@ -98,14 +135,14 @@ class NewTweetsCollector(Collector):
     Objects of this class are in charge of looking for new tweets for a given
     query
     """
-    def __init__(self, process_tweets, collection, fetcher, minutes, since_id=None, **kwargs):
+    def __init__(self, collection, fetcher, minutes, since_id=None, **kwargs):
         """Constructor
 
         Arguments:
         ---------
 
         """
-        super().__init__(process_tweets, collection, fetcher, minutes, **kwargs)
+        super().__init__(collection, fetcher, minutes, **kwargs)
         self.since_id = since_id
 
     def get_query(self):
@@ -146,14 +183,14 @@ class PastTweetsCollector(Collector):
     Objects of this class are in charge of looking for new tweets for a given
     query
     """
-    def __init__(self, process_tweets, collection, fetcher, minutes, max_id=None, **kwargs):
+    def __init__(self, collection, fetcher, minutes, max_id=None, **kwargs):
         """Constructor
 
         Arguments:
         ---------
 
         """
-        super().__init__(process_tweets, collection, fetcher, minutes, **kwargs)
+        super().__init__(collection, fetcher, minutes, **kwargs)
         self.max_id = max_id
 
     def get_query(self):
@@ -184,15 +221,40 @@ class PastTweetsCollector(Collector):
         return new_tweets
 
 
+class StreamingCollector(Collector):
+    def __init__(self, collection, queries, fetcher, minutes, **kwargs):
+        super().__init__(collection, fetcher, minutes, **kwargs)
+        self.queries = queries
+
+    def get_query(self):
+        return super().get_query()
+
+    def stream(self):
+        self.fetcher.stream(self.queries, self.collection)
+        print("Nunca debería llegar acá")
+
+    def wait(self):
+        print("Collector is waiting for {} minutes".format(self.minutes))
+        time.sleep(self.minutes * 60)
+
+    def run(self):
+        try:
+            self.stream()
+            self.wait()
+        except Exception as e:
+            print(e)
+
+
+
 class ByUsersCollector(Collector):
-    def __init__(self, process_tweets, collection, fetcher, minutes, isPositive, users=[], limit_id=None, direction="all", **kwargs):
+    def __init__(self, collection, fetcher, minutes, isPositive, users=[], limit_id=None, direction="all", **kwargs):
         """Constructor
 
         Arguments:
         ---------
 
         """
-        super().__init__(process_tweets, collection, fetcher, minutes, **kwargs)
+        super().__init__(collection, fetcher, minutes, **kwargs)
         self.users = users
         self.limit_id = limit_id
         self.direction = direction
