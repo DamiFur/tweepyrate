@@ -64,7 +64,7 @@ class Fetcher:
                     search = self.apps[self.current_app].search
                 print("Using app {}".format(self.apps[self.current_app].name))
                 new_tweets = [tweet for tweet in tweepy.Cursor(search, **query).items(self.count)]
-                print("Got {} new tweets".format(len(list(new_tweets))))
+                # print("Got {} new tweets".format(len(list(new_tweets))))
                 break
             except tweepy.TweepError as e:
                 if e.response and e.response.status_code == 404:
@@ -95,6 +95,7 @@ class Fetcher:
                     print("Bajamos {} tweets del streaming".format(stream.stored))
                 except Exception as e:
                     print("Hubo una excepción stremeando con la app {}: {}".format(app.name, str(e)))
+                    print("Bajamos {} tweets del streaming".format(stream.stored))
                     continue
 
             print("Streaming durmiendo por {} minutos".format(self.minutes))
@@ -173,7 +174,7 @@ class NewTweetsCollector(Collector):
         new_tweets = super().fetch()
 
         if len(new_tweets) > 0:
-            print("{} new tweets".format(len(new_tweets)))
+            print("{} NEW tweets".format(len(new_tweets)))
             self.since_id = max(tw.id for tw in new_tweets) + 1
         else:
             # Busy waiting
@@ -220,7 +221,7 @@ class PastTweetsCollector(Collector):
         new_tweets = super().fetch()
 
         if len(new_tweets) > 0:
-            print("{} new tweets".format(len(new_tweets)))
+            print("{} OLD tweets".format(len(new_tweets)))
             self.max_id = min(tw.id for tw in new_tweets) - 1
         else:
             raise StopIteration("No more tweets left!")
