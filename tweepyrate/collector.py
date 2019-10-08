@@ -41,6 +41,7 @@ class Fetcher:
         self.lock = threading.Lock()
         self.current_app = 0
         self.count = count
+        self.no_need_to_check = False
 
     def fetch(self, query, isUser, collection_name):
         """
@@ -84,7 +85,7 @@ class Fetcher:
 
         # new_tweets = app.search(**query)
         print("Guardando tweets")
-        self.process_tweets(new_tweets, query['q'], collection_name)
+        self.process_tweets(new_tweets, query['q'], collection_name, no_need_to_check=self.no_need_to_check)
         self.lock.release()
         return new_tweets
 
@@ -157,6 +158,7 @@ class NewTweetsCollector(Collector):
         """
         super().__init__(collection, fetcher, minutes, **kwargs)
         self.since_id = since_id
+        self.no_need_to_check = True
 
     def get_query(self):
         query = super().get_query()
@@ -238,6 +240,7 @@ class StreamingCollector(Collector):
     def __init__(self, collection, queries, fetcher, minutes, **kwargs):
         super().__init__(collection, fetcher, minutes, **kwargs)
         self.queries = queries
+        self.no_need_to_check = True
 
     def get_query(self):
         return super().get_query()
