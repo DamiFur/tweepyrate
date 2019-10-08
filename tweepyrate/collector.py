@@ -14,7 +14,7 @@ class StreamListenerAndStore(tweepy.StreamListener):
 
     def on_status(self, status):
         self.store_function([status], "streaming", self.collection)
-        stored += 1
+        self.stored += 1
 
     def on_error(self, status_code):
             if status_code == 420:
@@ -92,6 +92,7 @@ class Fetcher:
                     stream = tweepy.Stream(auth=app.auth, listener=localStreamer)
                     print("Streaming for {}".format(queries))
                     stream.filter(track=queries)
+                    print("Bajamos {} tweets del streaming".format(stream.stored))
                 except Exception as e:
                     print("Hubo una excepción stremeando con la app {}: {}".format(app.name, str(e)))
                     continue
