@@ -6,16 +6,15 @@ import datetime as dt
 
 
 class StreamListenerAndStore(tweepy.StreamListener):
-    def __init__(self, store_function, collection, lock):
+    def __init__(self, store_function, collection):
         super().__init__()
         self.store_function = store_function
         self.collection = collection
-        self.lock = lock
+        self.stored = 0
 
     def on_status(self, status):
-        # self.lock.acquire()
         self.store_function([status], "streaming", self.collection)
-        # self.lock.release()
+        stored += 1
 
     def on_error(self, status_code):
             if status_code == 420:
@@ -26,8 +25,11 @@ class StreamListenerAndStore(tweepy.StreamListener):
                 print("Error con status code {}".format(status_code))
 
     def on_limit(self,status):
-        time.Sleep()
         print("Llegué al limite. Cierro el Stream")
+        return False
+
+    def on_disconnect(self, notice):
+        print("Twitter te desconectó")
         return False
 
 class Fetcher:
@@ -88,6 +90,7 @@ class Fetcher:
                 try:
                     localStreamer = StreamListenerAndStore(self.process_tweets, collection_name, self.lock)
                     stream = tweepy.Stream(auth=app.auth, listener=localStreamer)
+                    print("Streaming for {}".format(queries))
                     stream.filter(track=queries)
                 except Exception as e:
                     print("Hubo una excepción stremeando con la app {}: {}".format(app.name, str(e)))
@@ -235,10 +238,6 @@ class StreamingCollector(Collector):
     def stream(self):
         self.fetcher.stream(self.queries, self.collection)
         print("Nunca debería llegar acá")
-
-    def wait(self):
-        print("Collector is waiting for {} minutes".format(self.minutes))
-        time.sleep(self.minutes * 60)
 
     def run(self):
         try:
