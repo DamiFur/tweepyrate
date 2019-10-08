@@ -85,9 +85,13 @@ class Fetcher:
         while True:
             for app in self.stream_apps:
                 print("Streaming con la app {}".format(app.name))
-                localStreamer = StreamListenerAndStore(self.process_tweets, collection_name, self.lock)
-                stream = tweepy.Stream(auth=app.auth, listener=localStreamer)
-                stream.filter(track=queries)
+                try:
+                    localStreamer = StreamListenerAndStore(self.process_tweets, collection_name, self.lock)
+                    stream = tweepy.Stream(auth=app.auth, listener=localStreamer)
+                    stream.filter(track=queries)
+                except Exception as e:
+                    print("Hubo una excepción stremeando con la app {}: {}".format(app.name, str(e)))
+                    continue
 
             print("Streaming durmiendo por {} minutos".format(self.minutes))
             time.sleep(self.minutes * 60)
