@@ -76,9 +76,14 @@ class Fetcher:
                     time.sleep(self.minutes*60)
                 else:
                     self.current_app += 1
-                    continue        
+                    continue
+
+            except Exception as e:
+                print("Hubo una excepción bajando tweets: {}".format(str(e)))
+                break
 
         # new_tweets = app.search(**query)
+        print("Guardando tweets")
         self.process_tweets(new_tweets, query['q'], collection_name)
         self.lock.release()
         return new_tweets
