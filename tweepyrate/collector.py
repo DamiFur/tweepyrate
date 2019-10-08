@@ -15,7 +15,6 @@ class StreamListenerAndStore(tweepy.StreamListener):
     def on_status(self, status):
         # self.lock.acquire()
         self.store_function([status], "streaming", self.collection)
-        print("Stored one tweet with fetcher")
         # self.lock.release()
 
     def on_error(self, status_code):
