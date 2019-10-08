@@ -88,7 +88,7 @@ class Fetcher:
             for app in self.stream_apps:
                 print("Streaming con la app {}".format(app.name))
                 try:
-                    localStreamer = StreamListenerAndStore(self.process_tweets, collection_name, self.lock)
+                    localStreamer = StreamListenerAndStore(self.process_tweets, collection_name)
                     stream = tweepy.Stream(auth=app.auth, listener=localStreamer)
                     print("Streaming for {}".format(queries))
                     stream.filter(track=queries)
