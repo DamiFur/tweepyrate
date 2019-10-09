@@ -113,7 +113,7 @@ class Fetcher:
 class Collector(threading.Thread):
     def __init__(self, collection, fetcher, minutes, **kwargs):
         self.args = kwargs
-        self.args["count"] = 1000
+        self.args["count"] = 300
         self.minutes = minutes
         self.collection = collection
         self.args["tweet_mode"] = "extended"
