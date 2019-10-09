@@ -58,13 +58,13 @@ class Fetcher:
         print("Lock aquired by {}".format(query))
         while True:
             try:
-                if isUser:
-                    search = self.apps[self.current_app].user_timeline
-                    print("Searching for tweets of user {}".format(query["screen_name"]))
-                else:
-                    search = self.apps[self.current_app].search
+                # if isUser:
+                #     search = self.apps[self.current_app].user_timeline
+                #     print("Searching for tweets of user {}".format(query["screen_name"]))
+                # else:
+                #     search = self.apps[self.current_app].search
                 print("Using app {}".format(self.apps[self.current_app].name))
-                new_tweets = app.search(**query)
+                new_tweets = self.apps[self.current_app].search(**query)
                 # new_tweets = [tweet for tweet in tweepy.Cursor(search, **query).items(self.count)]
                 # print("Got {} new tweets".format(len(list(new_tweets))))
                 break
