@@ -64,7 +64,8 @@ class Fetcher:
                 else:
                     search = self.apps[self.current_app].search
                 print("Using app {}".format(self.apps[self.current_app].name))
-                new_tweets = [tweet for tweet in tweepy.Cursor(search, **query).items(self.count)]
+                new_tweets = app.search(**query)
+                # new_tweets = [tweet for tweet in tweepy.Cursor(search, **query).items(self.count)]
                 # print("Got {} new tweets".format(len(list(new_tweets))))
                 break
             except tweepy.TweepError as e:
@@ -84,7 +85,6 @@ class Fetcher:
                 print("Hubo una excepción bajando tweets: {}".format(str(e)))
                 break
 
-        # new_tweets = app.search(**query)
         print("Guardando tweets")
         self.process_tweets(new_tweets, query['q'], collection_name, no_need_to_check=self.no_need_to_check)
         self.lock.release()
