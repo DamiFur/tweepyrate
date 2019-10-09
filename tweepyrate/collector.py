@@ -164,7 +164,7 @@ class NewTweetsCollector(Collector):
     def get_query(self):
         query = super().get_query()
 
-        my_dict.pop("max_id", None)
+        query.pop("max_id", None)
         if self.since_id:
             query["since_id"] = self.since_id
 
@@ -213,7 +213,7 @@ class PastTweetsCollector(Collector):
     def get_query(self):
         query = super().get_query()
 
-        my_dict.pop("since_id", None)
+        query.pop("since_id", None)
         if self.max_id:
             query["max_id"] = self.max_id
 
