@@ -76,6 +76,7 @@ class Fetcher:
                     print('(waiting to continue until:', dt.datetime.now()+dt.timedelta(minutes=self.minutes), ')')
                     time.sleep(self.minutes*60)
                 else:
+                    print('exception raised: {}'.format(e))
                     self.current_app += 1
                     continue
 
