@@ -8,7 +8,6 @@ def create_app(**kwargs):
     auth = tweepy.OAuthHandler(
             consumer_key=kwargs['consumer_key'],
             consumer_secret=kwargs['consumer_secret'],
-            secure=True
     )
     auth.set_access_token(kwargs['access_token'], kwargs['access_secret'])
 
