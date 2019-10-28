@@ -58,14 +58,17 @@ class Fetcher:
         print("Lock aquired by {}".format(query))
         while True:
             try:
-                # if isUser:
-                #     search = self.apps[self.current_app].user_timeline
-                #     print("Searching for tweets of user {}".format(query["screen_name"]))
-                # else:
-                #     search = self.apps[self.current_app].search
-                print("Using app {}".format(self.apps[self.current_app].name))
-                new_tweets = self.apps[self.current_app].search(**query)
-                # new_tweets = [tweet for tweet in tweepy.Cursor(search, **query).items(self.count)]
+                if isUser:
+                    search = self.apps[self.current_app].user_timeline
+                    print("Searching for tweets of user {}".format(query["screen_name"]))
+                else:
+                    search = self.apps[self.current_app].search
+                if  "since_id" in query or "max_id" in query:
+                    print("Api de search")
+                    new_tweets = self.apps[self.current_app].search(**query)
+                else:
+                    print("Cursor")
+                    new_tweets = [tweet for tweet in tweepy.Cursor(search, **query).items(self.count)]
                 # print("Got {} new tweets".format(len(list(new_tweets))))
                 break
             except tweepy.TweepError as e:
@@ -99,7 +102,7 @@ class Fetcher:
                     stream = tweepy.Stream(auth=app.auth, listener=localStreamer)
                     print("Streaming for {}".format(queries))
                     stream.filter(track=queries)
-                    print("Bajamos {} tweets del streaming".format(stream.stored))
+                    #print("Bajamos {} tweets del streaming".format(stream.stored))
                 except Exception as e:
                     print("Hubo una excepción stremeando con la app {}: {}".format(app.name, str(e)))
                     print("Bajamos {} tweets del streaming".format(stream.stored))
@@ -113,7 +116,7 @@ class Fetcher:
 class Collector(threading.Thread):
     def __init__(self, collection, fetcher, minutes, **kwargs):
         self.args = kwargs
-        self.args["count"] = 300
+        self.args["count"] = 5000
         self.minutes = minutes
         self.collection = collection
         self.args["tweet_mode"] = "extended"
