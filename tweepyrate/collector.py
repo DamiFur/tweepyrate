@@ -43,6 +43,9 @@ class Fetcher:
         self.count = count
         self.no_need_to_check = False
 
+    def GetById(self, tweet_id):
+        return self.apps[self.current_app].get_status(tweet_id, tweet_mode="extended")
+
     def fetch(self, query, isUser, collection_name):
         """
         Fetches new tweets
